@@ -8,10 +8,13 @@ import 'package:url_launcher/url_launcher.dart';
 
 
 class ScanPage extends StatefulWidget {
+  const ScanPage({
+    Key key,
+  }) : super(key: key);
+
   @override
-  _ScanPageState createState() {
-     return _ScanPageState();
-  }
+  State<StatefulWidget> createState() => _ScanPageState();
+
 }
 
 class _ScanPageState extends State<ScanPage> {
@@ -30,6 +33,7 @@ class _ScanPageState extends State<ScanPage> {
       controller.resumeCamera();
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +61,7 @@ class _ScanPageState extends State<ScanPage> {
     bool scanned = false;
     controller.scannedDataStream.listen((scanData) {
       if(!scanned) {
+        this.controller.stopCamera();
         setState(() {
           result = scanData;
           print(result.code);
@@ -75,14 +80,9 @@ class _ScanPageState extends State<ScanPage> {
   }
 
 
-  // get the text in the TextField and start the Second Screen
   void _sendDataToHistory (BuildContext context) {
-    controller?.pauseCamera();
+    // controller.stopCamera();
     String textToSend = result.code;
-    // HistoryFileHelper fileHelper;
-    // var entryDate = DateTime.now().toIso8601String();
-    // var format = result.format.formatName;
-    // fileHelper.addEntry("scan", entryDate, textToSend, format);
     var value = Navigator.push(
         context,
         MaterialPageRoute(
@@ -94,7 +94,6 @@ class _ScanPageState extends State<ScanPage> {
 
 class SingleScannedPage extends StatelessWidget {
   final String text;
-
   SingleScannedPage({Key key, @required this.text}) : super(key: key);
 
   @override
@@ -105,7 +104,7 @@ class SingleScannedPage extends StatelessWidget {
         child: SelectableLinkify(
           onOpen: _onOpen,
           text: text,
-          // style: TextStyle(fontSize: 24),
+          style: TextStyle(fontSize: 20),
           options: LinkifyOptions(humanize: false),
 
         ),
