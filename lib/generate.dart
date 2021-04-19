@@ -10,8 +10,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:document_file_save/document_file_save.dart';
 
 
-
-
 class GeneratePage extends StatefulWidget {
   const GeneratePage({
     Key key,
@@ -39,7 +37,7 @@ class GeneratePageState extends State<GeneratePage> {
               child: Card(
                 elevation: 5,
                 child: ListTile(
-                  leading: Icon(Icons.edit),
+                  leading: Icon(Icons.text_fields),
                   trailing: TextButton(
                     child: Text(
                       "ENTER",
@@ -122,7 +120,14 @@ class SingleGeneratedPage extends StatelessWidget {
                   padding: EdgeInsets.only(right: 20.0),
                   child: GestureDetector(
                     onTap: () {
-                      saveImage(imageBytes);
+                      saveImage(imageBytes).then((value) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Successfully saved on your download folder as '$value'")
+                          ),
+                        );
+                      }
+                      );
                     },
                     child: Icon(
                       Icons.save,
@@ -147,20 +152,28 @@ class SingleGeneratedPage extends StatelessWidget {
       );
   }
 
+
+  Future<String> saveImage(List<int> imageBytes) async {
+    String _dateNowInEpoch = DateTime.now().toUtc().millisecondsSinceEpoch.toString();
+    String _newFileName = "code"+_dateNowInEpoch + ".png";
+    DocumentFileSave.saveFile(
+        Uint8List.fromList(imageBytes),
+        _newFileName, "image/png");
+    return _newFileName;
+  }
+
 }
 
 
-List<int> buildBarcodeImage(String inputText, [String format = 'QrCode']) {
+List<int> buildBarcodeImage(String inputText, [String format = 'DataMatrix']) {
   final image = bImage.Image(500, 500);
   final int _codeWidth = 440;
   final int _codeHeight = 440;
 
-  print(BarcodeType.values);
   BarcodeType type = BarcodeType.values.firstWhere(
           (element) => element.toString() == 'BarcodeType.' + format,
-      orElse: () => BarcodeType.QrCode);
+      orElse: () => BarcodeType.DataMatrix);
 
-  print(type);
   bImage.fill(image, bImage.getColor(255, 255, 255));
   drawBarcode(
     image,
@@ -181,13 +194,4 @@ void shareImage(List<int> imageBytes) async {
   final File imageFile = File('${temp.path}/code.png');
   imageFile.writeAsBytesSync(imageBytes);
   Share.shareFiles(['${temp.path}/code.png'], );
-}
-
-
-void saveImage(List<int> imageBytes) async {
-  String _dateNowInEpoch = DateTime.now().toUtc().millisecondsSinceEpoch.toString();
-  DocumentFileSave.saveFile(
-      Uint8List.fromList(imageBytes),
-      "code"+_dateNowInEpoch + ".png",
-      "image/png");
 }
